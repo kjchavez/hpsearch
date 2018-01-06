@@ -1,0 +1,16 @@
+name: ExampleParameterTuning
+goal: MAXIMIZE
+max_trials: 10
+max_parallel_trials: 1
+params:
+        - parameter_name: number
+          type: FLOAT
+          min_value: 1e-4
+          max_value: 1e-1
+          scale_type: UNIT_LOG_SCALE
+        - parameter_name: category
+          type: CATEGORICAL
+          categorical_values:
+                  - HOME
+                  - WORK
+                  - BEACH
