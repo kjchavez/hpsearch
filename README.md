@@ -1,4 +1,13 @@
-# Usage
+# hpsearch
+
+Hyperparameter tuning for the average Joe.
+
+## Why hpsearch?
+
+* Lightweight. Adds minimal dependencies to your project.
+* Same config structure used by Google Cloud ML Engine.
+
+## Usage
 
 Config is meant to be compatible with HyperparameterSpec from Google Cloud ML Engine.
 
