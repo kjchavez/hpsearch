@@ -1,19 +1,19 @@
 {
 	"name": "ExampleParameterTuning",
 	"goal": "MAXIMIZE",
-	"max_trials": 10,
-	"max_parallel_trials": 1,
+	"maxTrials": 10,
+	"maxParallelTrials": 1,
 	"params": [
 		{
-			"parameter_name": "number",
+			"parameterName": "number",
 			"type": "FLOAT",
-			"min_value": 1e-4,
-			"max_value": 1e-1,
-			"scale_type": "UNIT_LOG_SCALE"
+			"minValue": 1e-4,
+			"maxValue": 1e-1,
+			"scaleType": "UNIT_LOG_SCALE"
 		}, {
-			"parameter_name": "category",
+			"parameterName": "category",
 			"type": "CATEGORICAL",
-			"categorical_values": ["HOME", "WORK", "BEACH"]
+			"categoricalValues": ["HOME", "WORK", "BEACH"]
 		}
 	]
 }
