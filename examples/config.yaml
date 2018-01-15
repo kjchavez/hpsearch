@@ -4,9 +4,9 @@ max_trials: 10
 max_parallel_trials: 1
 params:
         - parameterName: number
-          type: FLOAT
-          minValue: 1e-4
-          maxValue: 1e-1
+          type: DOUBLE
+          minValue: 1.e-4
+          maxValue: 1.e-1
           scaleType: UNIT_LOG_SCALE
         - parameterName: category
           type: CATEGORICAL

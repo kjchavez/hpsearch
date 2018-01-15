@@ -2,6 +2,8 @@ import click
 import json
 import yaml
 
+from hpsearch import parameter
+
 def is_valid(config):
     if 'name' not in config:
         print("Config must have a 'name'")
@@ -46,6 +48,8 @@ def run(config_file):
 
     print("Running hyperparameter search with configuration:")
     print(json.dumps(config, indent=2))
+    sampler = parameter.MultiParameterSampler(config['params'])
+    print(sampler.sample())
 
 if __name__ == "__main__":
     cli()

@@ -31,7 +31,7 @@ class ScaleType(object):
 
 def get_sample_fn_from_spec(param_spec):
     param_type = param_spec['type']
-    scale_type = param_spec['scaleType']
+    scale_type = param_spec.get('scaleType', None)
     if (param_type, scale_type) == (ParameterType.DOUBLE, ScaleType.LINEAR):
         return lambda: _double_linear(param_spec['minValue'], param_spec['maxValue'])
     if (param_type, scale_type) == (ParameterType.DOUBLE, ScaleType.LOG):
@@ -57,3 +57,14 @@ class ParameterSampler(object):
     def sample(self):
         """ Returns a parameter value. """
         return self.sample_fn()
+
+
+class MultiParameterSampler(object):
+    def __init__(self, param_specs):
+        self.samplers = {}
+        for spec in param_specs:
+            sampler = ParameterSampler(spec)
+            self.samplers[sampler.name] = sampler
+
+    def sample(self):
+        return {name: sampler.sample() for name, sampler in self.samplers.items()}
