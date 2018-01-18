@@ -2,6 +2,7 @@ name: ExampleParameterTuning
 goal: MAXIMIZE
 max_trials: 10
 max_parallel_trials: 1
+script: examples/train.py
 params:
         - parameterName: number
           type: DOUBLE

@@ -1,6 +1,9 @@
 import click
 import json
 import yaml
+import uuid
+import os
+import subprocess
 
 from hpsearch import parameter
 
@@ -10,6 +13,9 @@ def is_valid(config):
         return False
     if 'params' not in config or len(config['params']) == 0:
         print("Config must have 'params' list with at least one param")
+        return False
+    if 'script' not in config:
+        print("Config must have a 'script'")
         return False
 
     return True
@@ -35,6 +41,12 @@ def load_config_file(config_file):
 
     return config
 
+def escape(x):
+    if isinstance(x, str):
+        return '"'+x+'"'
+    else:
+        return x
+
 @click.group()
 def cli():
     pass
@@ -49,7 +61,20 @@ def run(config_file):
     print("Running hyperparameter search with configuration:")
     print(json.dumps(config, indent=2))
     sampler = parameter.MultiParameterSampler(config['params'])
+    trial_id = uuid.uuid4().hex
+    FNULL = open(os.devnull, 'w')
+
+    launcher = config.get('launcher', 'python')
+    script = config['script']
+
+    params = sampler.sample()
+    params['trial_id'] = trial_id
+    args = ['--%s=%s' % (key, escape(value)) for key, value in params.items()]
+    p = subprocess.Popen([launcher, script] + args) #,
+                         #stdout=FNULL, stderr=FNULL)
+    print("PID:", p.pid)
     print(sampler.sample())
+
 
 if __name__ == "__main__":
     cli()
