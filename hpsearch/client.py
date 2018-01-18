@@ -1,12 +1,12 @@
 import os
 import time
 
+from hpsearch import consts
+from hpsearch.trial import Trial
+
 class HpsearchClient(object):
-    TRIAL_METRIC_DIR = "/tmp/hpsearch"
     def __init__(self, trial_id):
-        self.trial_id = trial_id
-        if not os.path.exists(HpsearchClient.TRIAL_METRIC_DIR):
-            os.makedirs(HpsearchClient.TRIAL_METRIC_DIR)
+        self.trial = Trial.from_trial_id(trial_id)
 
     def record(self, score):
         try:
@@ -14,6 +14,4 @@ class HpsearchClient(object):
         except:
             raise TypeError("|score| must be castable to float")
 
-        with open(os.path.join(HpsearchClient.TRIAL_METRIC_DIR, self.trial_id), 'a') as fp:
-            print("%0.3f:%f" % (time.time(), score), file=fp)
-
+        self.trial.add_score(score)

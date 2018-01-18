@@ -6,6 +6,8 @@ import os
 import subprocess
 
 from hpsearch import parameter
+from hpsearch import consts
+from hpsearch.trial import Trial
 
 def is_valid(config):
     if 'name' not in config:
@@ -41,12 +43,6 @@ def load_config_file(config_file):
 
     return config
 
-def escape(x):
-    if isinstance(x, str):
-        return '"'+x+'"'
-    else:
-        return x
-
 @click.group()
 def cli():
     pass
@@ -68,13 +64,21 @@ def run(config_file):
     script = config['script']
 
     params = sampler.sample()
+    trial = Trial(config['name'], trial_id, params)
     params['trial_id'] = trial_id
-    args = ['--%s=%s' % (key, escape(value)) for key, value in params.items()]
+    args = ['--%s=%s' % (key, value) for key, value in params.items()]
     p = subprocess.Popen([launcher, script] + args) #,
                          #stdout=FNULL, stderr=FNULL)
+    trial.set_pid(p.pid)
     print("PID:", p.pid)
     print(sampler.sample())
 
+
+@cli.command()
+@click.argument("name")
+def show_trials(name):
+    for trial_dir in os.listdir(consts.TRIAL_METRICS_DIR):
+        print(trial_dir)
 
 if __name__ == "__main__":
     cli()
