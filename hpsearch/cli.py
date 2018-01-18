@@ -75,11 +75,12 @@ def run(config_file):
 
 
 @cli.command()
-@click.argument("name")
+@click.option("--name", type=str, default="")
 def show_trials(name):
     for trial_dir in os.listdir(consts.TRIAL_METRICS_DIR):
         trial = Trial.from_trial_id(trial_dir)
-        print("%s:%s = %0.4f" % (trial.experiment_name, trial.trial_id, trial.max_score()))
+        if trial.experiment_name.startswith(name):
+            print("%s:%s = %0.4f" % (trial.experiment_name, trial.trial_id, trial.max_score()))
 
 if __name__ == "__main__":
     cli()
