@@ -61,3 +61,10 @@ class Trial(object):
 
         return _scores
 
+    def max_score(self):
+        scores = self.scores()
+        return max(list(zip(*scores))[1])
+
+    def min_score(self):
+        scores = self.scores()
+        return min(list(zip(*scores))[1])
