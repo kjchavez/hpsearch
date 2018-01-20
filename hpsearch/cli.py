@@ -58,17 +58,17 @@ def run(config_file):
     print(json.dumps(config, indent=2))
     sampler = parameter.MultiParameterSampler(config['params'])
     trial_id = uuid.uuid4().hex
-    FNULL = open(os.devnull, 'w')
 
     launcher = config.get('launcher', 'python')
     script = config['script']
-
     params = sampler.sample()
     trial = Trial(config['name'], trial_id, params)
+    stdout = open(trial.stdout(), 'a');
+    stderr = open(trial.stderr(), 'a');
     params['trial_id'] = trial_id
     args = ['--%s=%s' % (key, value) for key, value in params.items()]
-    p = subprocess.Popen([launcher, script] + args) #,
-                         #stdout=FNULL, stderr=FNULL)
+    p = subprocess.Popen([launcher, script] + args,
+                         stdout=stdout, stderr=stderr)
     trial.set_pid(p.pid)
     print("PID:", p.pid)
     print(sampler.sample())

@@ -61,6 +61,12 @@ class Trial(object):
 
         return _scores
 
+    def stdout(self):
+        return os.path.join(self.trial_dir, 'stdout.txt');
+
+    def stderr(self):
+        return os.path.join(self.trial_dir, 'stderr.txt');
+
     def max_score(self):
         scores = self.scores()
         return max(list(zip(*scores))[1])
