@@ -139,7 +139,9 @@ def show(max_trials):
                                                                          params_str))
 
 def try_get_args(launcher, script):
-    cp = subprocess.run([launcher, script, '--help'], stdout=subprocess.PIPE)
+    cp = subprocess.run([launcher, script, '--help'], stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE)
+    usage_line = ""
     for line in cp.stdout.split(b'\n'):
         if b'usage' in line:
             usage_line = str(line, 'latin1')
