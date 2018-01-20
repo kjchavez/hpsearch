@@ -17,5 +17,5 @@ params:
 
 # DIVERGED FROM CLOUD ML.
 launcher: python  # Can use a python interpreter from a virtual env.
-script: examples/train.py
+script: examples/smoke/train.py
 maxTrialTime: 10s

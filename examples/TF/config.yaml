@@ -1,0 +1,15 @@
+name: TensorflowTutorial
+goal: MINIMIZE
+maxTrials: 10
+maxParallelTrials: 1
+params:
+        - parameterName: learning_rate
+          type: DOUBLE
+          minValue: 1.e-4
+          maxValue: 1.e-1
+          scaleType: UNIT_LOG_SCALE
+
+# DIVERGED FROM CLOUD ML.
+launcher: python  # Can use a python interpreter from a virtual env.
+script: examples/TF/train.py
+maxTrialTime: 2m
