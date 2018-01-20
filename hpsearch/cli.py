@@ -1,8 +1,11 @@
 import click
 import json
 import yaml
+import re
 import uuid
+import io
 import os
+import sys
 import subprocess
 
 from hpsearch import parameter
@@ -134,6 +137,59 @@ def show(max_trials):
                 params_str = params_str[0:35] + "..."
             print("{:.8}...  best_score={:<7.4f}  params={}".format(trial.trial_id, score,
                                                                          params_str))
+
+def try_get_args(launcher, script):
+    cp = subprocess.run([launcher, script, '--help'], stdout=subprocess.PIPE)
+    for line in cp.stdout.split(b'\n'):
+        if b'usage' in line:
+            usage_line = str(line, 'latin1')
+    args = re.findall(r"--(\w+)\s", usage_line)
+    args = [arg for arg in args if arg != 'help']
+    return args
+
+
+@cli.command()
+@click.argument("script", type=click.Path(exists=True))
+@click.argument("experiment_name", type=str)
+@click.option("--launcher", type=click.Path(exists=True),
+             help="Executable that will run the script. If not set, assumed to be the Python"
+              " interpreter that is running hpsearch.")
+def new_config(script, experiment_name, launcher=None):
+    script = os.path.abspath(script)
+    if launcher is not None:
+        launcher = os.path.abspath(launcher)
+    else:
+        launcher = sys.executable
+
+    try_get_args(launcher, script)
+
+    config = {}
+    config['launcher'] = launcher
+    config['script'] = script
+    config['name'] = experiment_name
+
+    # Provides some sensible defaults
+    config['maxTrials'] = 10
+    config['maxParallelTrials'] = 1
+    config['goal'] = consts.MINIMIZE
+    config['maxTrialTime'] = '10m'
+
+    args = try_get_args(launcher, script)
+    if args:
+        config['params'] = []
+        for arg in args:
+            config['params'].append({
+                'parameterName': arg,
+                'type': "%TYPE%",
+                'scaleType': "%SCALE%",
+                'minValue': "%MIN%",
+                'maxValue': "%MAX%",
+                'categoricalValues': ['NONE']
+            })
+
+    fp = io.StringIO()
+    yaml.dump(config, fp, default_flow_style=False)
+    print(fp.getvalue())
 
 if __name__ == "__main__":
     cli()
