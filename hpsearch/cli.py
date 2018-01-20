@@ -130,9 +130,9 @@ def show(max_trials):
             scored_trials.reverse()
         for score, trial in scored_trials[0:max_trials]:
             params_str = json.dumps(trial.params)
-            if len(params_str) > 43:
-                params_str = params_str[0:40] + "..."
-            print("  {:.10}...   best_score={:<7.4f}   params={}".format(trial.trial_id, score,
+            if len(params_str) > 38:
+                params_str = params_str[0:35] + "..."
+            print("{:.8}...  best_score={:<7.4f}  params={}".format(trial.trial_id, score,
                                                                          params_str))
 
 if __name__ == "__main__":
