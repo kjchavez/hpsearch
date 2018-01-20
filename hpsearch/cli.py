@@ -43,6 +43,17 @@ def load_config_file(config_file):
 
     return config
 
+def parse_duration(duration_str):
+    """ Parses string durations into an integer number of seconds.
+
+    Supported format (as regex): [0-9]+[smh]
+    """
+    unit = duration_str[-1]
+    if unit not in ('s', 'm', 'h'):
+        raise ValueError("Invalid duration string")
+    multiplier = { 's': 1, 'm': 60, 'h': 3600 }
+    return int(duration_str[0:-1])*multiplier[unit]
+
 @click.group()
 def cli():
     pass
@@ -57,22 +68,34 @@ def run(config_file):
     print("Running hyperparameter search with configuration:")
     print(json.dumps(config, indent=2))
     sampler = parameter.MultiParameterSampler(config['params'])
-    trial_id = uuid.uuid4().hex
-
     launcher = config.get('launcher', 'python')
     script = config['script']
-    params = sampler.sample()
-    trial = Trial(config['name'], trial_id, params)
-    stdout = open(trial.stdout(), 'a');
-    stderr = open(trial.stderr(), 'a');
-    params['trial_id'] = trial_id
-    args = ['--%s=%s' % (key, value) for key, value in params.items()]
-    p = subprocess.Popen([launcher, script] + args,
-                         stdout=stdout, stderr=stderr)
-    trial.set_pid(p.pid)
-    print("PID:", p.pid)
-    print(sampler.sample())
 
+    samples = [sampler.sample() for _ in range(config['maxTrials'])]
+    # Run them sequentially for now.
+    if config['maxParallelTrials'] > 1:
+        print("Parallel trials not yet supported. Running sequentially")
+
+    for x in samples:
+        trial_id = uuid.uuid4().hex
+        trial = Trial(config['name'], trial_id, x)
+        stdout = open(trial.stdout(), 'a');
+        stderr = open(trial.stderr(), 'a');
+        args = ['--%s=%s' % (key, value) for key, value in x.items()]
+        args.append('--trial_id=%s' % trial_id)
+        p = subprocess.Popen([launcher, script] + args,
+                             stdout=stdout, stderr=stderr)
+        trial.set_pid(p.pid)
+        print("Running trial with pid=%s" % p.pid)
+        print("Params=", json.dumps(x))
+
+        # Wait some max run time, then KILL the process.
+        timeout = parse_duration(config['maxTrialTime'])
+        try:
+            p.wait(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            print("Trial exceeded timeout. Terminating")
+            p.terminate()
 
 @cli.command()
 @click.option("--name", type=str, default="")

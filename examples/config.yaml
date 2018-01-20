@@ -1,8 +1,7 @@
 name: ExampleParameterTuning
 goal: MAXIMIZE
-max_trials: 10
-max_parallel_trials: 1
-script: examples/train.py
+maxTrials: 10
+maxParallelTrials: 1
 params:
         - parameterName: number
           type: DOUBLE
@@ -15,3 +14,7 @@ params:
                   - HOME
                   - WORK
                   - BEACH
+
+# DIVERGED FROM CLOUD ML.
+script: examples/train.py
+maxTrialTime: 10s
