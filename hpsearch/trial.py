@@ -4,18 +4,26 @@ import os
 import yaml
 
 class Trial(object):
-    def __init__(self, experiment_name, trial_id, params):
+    def __init__(self, experiment, trial_id, params):
         self.trial_id = trial_id
-        self.experiment_name = experiment_name
+        self.experiment = experiment
+        self.experiment_name = experiment['name']
         self.trial_dir = os.path.join(consts.TRIAL_METRICS_DIR, trial_id)
         if not os.path.exists(self.trial_dir):
             os.makedirs(self.trial_dir)
 
+        # High level information about the trial.
         self._metadata_filename = os.path.join(self.trial_dir, "METADATA")
         if not os.path.exists(self._metadata_filename):
             with open(self._metadata_filename, 'w') as fp:
-                yaml.dump({'experiment': experiment_name, 'trial_id': trial_id, 'start_time':
+                yaml.dump({'experiment': self.experiment_name, 'trial_id': trial_id, 'start_time':
                            time.time()}, fp)
+
+        # Stores a copy of the experiment config for our records.
+        experiment_filename = os.path.join(self.trial_dir, "experiment.yaml")
+        if not os.path.exists(experiment_filename):
+            with open(experiment_filename, 'w') as fp:
+                yaml.dump(experiment, fp)
 
         self._scores_filename = os.path.join(self.trial_dir, "scores.txt")
         self._params_filename = os.path.join(self.trial_dir, "params.yaml")
@@ -33,10 +41,10 @@ class Trial(object):
         with open(os.path.join(trial_dir, "params.yaml")) as fp:
             params = yaml.load(fp)
 
-        with open(os.path.join(trial_dir, 'METADATA')) as fp:
-            metadata = yaml.load(fp)
+        with open(os.path.join(trial_dir, "experiment.yaml")) as fp:
+            experiment = yaml.load(fp)
 
-        return Trial(metadata['experiment'], trial_id, params)
+        return Trial(experiment, trial_id, params)
 
 
     def add_score(self, score):
@@ -74,3 +82,13 @@ class Trial(object):
     def min_score(self):
         scores = self.scores()
         return min(list(zip(*scores))[1])
+
+    def best_score(self):
+        if 'goal' not in self.experiment:
+            return float('NaN')
+
+        if self.experiment['goal'] == consts.MAXIMIZE:
+            return self.max_score()
+
+        if self.experiment['goal'] == consts.MINIMIZE:
+            return self.min_score()

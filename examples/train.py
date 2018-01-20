@@ -14,5 +14,5 @@ print(score)
 hpsearch.record(args.trial_id, score)
 
 # Add a really long delay sometimes.
-if random.random() < 0.5:
+if random.random() < 0.1:
     time.sleep(20)

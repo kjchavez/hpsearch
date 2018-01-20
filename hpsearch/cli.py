@@ -78,7 +78,7 @@ def run(config_file):
 
     for x in samples:
         trial_id = uuid.uuid4().hex
-        trial = Trial(config['name'], trial_id, x)
+        trial = Trial(config, trial_id, x)
         stdout = open(trial.stdout(), 'a');
         stderr = open(trial.stderr(), 'a');
         args = ['--%s=%s' % (key, value) for key, value in x.items()]
@@ -104,6 +104,36 @@ def show_trials(name):
         trial = Trial.from_trial_id(trial_dir)
         if trial.experiment_name.startswith(name):
             print("%s:%s = %0.4f" % (trial.experiment_name, trial.trial_id, trial.max_score()))
+
+@cli.command()
+@click.option("--max_trials", type=int, default=10, help="How many trials to show per experiment")
+def show(max_trials):
+    experiments = {}
+    for trial_dir in os.listdir(consts.TRIAL_METRICS_DIR):
+        try:
+            trial = Trial.from_trial_id(trial_dir)
+        except:
+            print("Failed to read trial", trial_dir)
+            continue
+
+        if trial.experiment_name not in experiments:
+            experiments[trial.experiment_name] = []
+        experiments[trial.experiment_name].append(trial)
+
+    for name, trials in experiments.items():
+        goal = trials[0].experiment['goal']
+        print("="*80)
+        print("{:<30} ({} trials)   {}".format(name, len(trials), goal))
+        print("="*80)
+        scored_trials = sorted((trial.best_score(), trial) for trial in trials)
+        if goal == consts.MAXIMIZE:
+            scored_trials.reverse()
+        for score, trial in scored_trials[0:max_trials]:
+            params_str = json.dumps(trial.params)
+            if len(params_str) > 43:
+                params_str = params_str[0:40] + "..."
+            print("  {:.10}...   best_score={:<7.4f}   params={}".format(trial.trial_id, score,
+                                                                         params_str))
 
 if __name__ == "__main__":
     cli()
